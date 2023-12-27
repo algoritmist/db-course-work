@@ -1,0 +1,63 @@
+name: Integration tests & linting
+run-name: ${{ github.actor }} started workflow
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  PGHOST: postgres
+  PGPORT: 5432
+  PGPASSWORD: postgres
+  PGUSER: runner
+  PGOPTIONS: '--client-min-messages=warning'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      sql_any_changed: ${{ steps.changed-files.outputs.sql_any_changed }}
+      src_any_changed: ${{ steps.changed-files.outputs.src_any_changed }}
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files_yaml: |
+            sql:
+              - '**.sql'
+            src:
+              - prog/**
+
+  # runs only when *.sql files are changed
+  basic-check:
+    needs: prepare
+    if: needs.prepare.outputs.sql_any_changed == 'true'
+    runs-on: ubuntu-latest
+    container:
+      image: postgres:15
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ env.PGUSER }}
+          POSTGRES_PASSWORD: ${{ env.PGPASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - "5432:5432"
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Check scripts
+        working-directory: ./backend/sql
+        run: |
+          ./check.sh
