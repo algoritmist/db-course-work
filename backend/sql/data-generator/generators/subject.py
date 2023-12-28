@@ -8,8 +8,10 @@ class Subject:
     
 def generate():
     subjects = []
-    with open("backend/sql/data-generator/data/subjects.csv") as f:
-        for id, line in enumerate(f)[1:]:
+    with open("../data/subjects.csv") as f:
+        for id, line in enumerate(f):
+            if id == 0:
+                continue
             name = line
             subjects.append(Subject(id, name))
     return subjects

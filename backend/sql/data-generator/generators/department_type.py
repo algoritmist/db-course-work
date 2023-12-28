@@ -4,6 +4,9 @@ class DepartmentType:
         self.name = name
         self.description = description
 
+    def __repr__(self):
+        return f"{self.id},{self.name},{self.description}"
+
 
 def generate():
     return [
@@ -29,3 +32,4 @@ def generate():
                        Если у пользователя достаточно средств, то направляется заявка в транспортный отдел, для доставки войск в зону боевых действий.
                        Также направляется заявка в финансовый отдел''')
     ]
+

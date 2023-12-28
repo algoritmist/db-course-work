@@ -1,16 +1,9 @@
-class Status:
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
+from enum import Enum
 
-    def __repr__(self):
-        return f"{self.id},{self.name}"
 
-def generate():
-    return [
-        Status(0, 'военнообязанный'),
-        Status(1, "солдат"),
-        Status(2, "полководец"),
-        Status(3, "император"),
-        Status(4, 'свободный')
-    ]
+class Status(Enum):
+   ВОЕННООБЯЗАННЫЙ = 0
+   СОЛДАТ = 1
+   ПОЛКОВОДЕЦ = 2
+   ИМПЕРАТОР = 3
+   СВОБОДНЫЙ = 4
