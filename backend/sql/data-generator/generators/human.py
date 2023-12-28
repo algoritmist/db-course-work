@@ -41,7 +41,7 @@ def generate_one(id):
         date = fake.date_of_birth()
         status = Status.СВОБОДНЫЙ if gender == 'F' else generate_random_status()
         money = random.randint(0, 10**9)
-        return Human(id, gender, first_name, last_name, date, status, money)
+        return Human(id, gender, first_name, last_name, date, status.value, money)
 
 def generate(rows):
     return [generate_one(id) for id in range(rows)]
