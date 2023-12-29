@@ -17,4 +17,5 @@ def generate(warriors, spells):
     warrior_spells = []
     for warrior in warriors:
         for spell in random.sample(spells, random.randint(0, 3)):
-            warrior_spells.append(WarriorSpell(warrior.id, spell.name, random.randint(0, 5)))
+            warrior_spells.append(WarriorSpell(warrior.human_id, spell.name, random.randint(0, 5)))
+    return warrior_spells

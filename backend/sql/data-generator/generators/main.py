@@ -12,6 +12,7 @@ import application
 import priveleges
 import contract
 import journal
+import warrior_spell
 
 MAX_PEOPLE = 10**5
 
@@ -97,4 +98,11 @@ jl = journal.generate(applications, contracts)
 with open("../out/journal.csv", "w") as f:
     f.write(journal.headers()+"\n")
     [f.write(je.__repr__()+"\n") for je in jl]
+    f.close()
+
+warrior_spells = warrior_spell.generate(warriors, spells)
+
+with open("../out/warrior_spells.csv", "w") as f:
+    f.write(warrior_spell.headers()+"\n")
+    [f.write(warrior_spell.__repr__()+"\n") for warrior_spell in warrior_spells]
     f.close()
