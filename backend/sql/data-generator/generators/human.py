@@ -4,6 +4,8 @@ from faker import Faker
 
 fake = Faker('ru_RU')
 
+def headers():
+    return "ИД,Имя,Фамилия,Пол,Статус_ИД,Дата_рождения,Баланс"
 class Human:
     def __init__(self, id, gender, first_name, last_name, date_of_birth, status_id, money):
         self.id = id

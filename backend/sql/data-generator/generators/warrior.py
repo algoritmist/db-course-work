@@ -2,6 +2,8 @@ import random
 
 from status import *
 
+def headers():
+   return "ЧЛВК_ИД,Тип_воина,Предводитель_ИД,Здоровье,Броня,Оружие"
 
 class Warrior:
     def __init__(self, human_id, warrior_type, leader_id, health, armor_health, weapon_health):
@@ -13,21 +15,21 @@ class Warrior:
         self.weapon_health = weapon_health
 
     def __repr__(self):
-        return f"{self.human_id},{self.warrior_type},{self.health},{self.armor_health},{self.weapon_health}"
+        return f"{self.human_id},{self.warrior_type},{self.leader_id},{self.health},{self.armor_health},{self.weapon_health}"
 
 
 def generate(humans, warrior_types):
-    emperors = list(filter(lambda h: h.status_id == Status.ИМПЕРАТОР, humans))
-    generals = list(filter(lambda h: h.status_id == Status.ПОЛКОВОДЕЦ, humans))
-    soldiers = list(filter(lambda h: h.status_id == Status.СОЛДАТ, humans))
+    emperors = list(filter(lambda h: h.status_id == Status.ИМПЕРАТОР.value, humans))
+    generals = list(filter(lambda h: h.status_id == Status.ПОЛКОВОДЕЦ.value, humans))
+    soldiers = list(filter(lambda h: h.status_id == Status.СОЛДАТ.value, humans))
 
     emperor_warriors = \
         [
             Warrior
                 (
                 human.id,
-                random.choice(warrior_types),
-                None,
+                random.choice(warrior_types).name,
+                (-1),
                 random.randint(1, 100),
                 random.randint(1, 100),
                 random.randint(1, 100)
@@ -39,8 +41,8 @@ def generate(humans, warrior_types):
             Warrior
                 (
                 human.id,
-                random.choice(warrior_types),
-                random.choice(emperors),
+                random.choice(warrior_types).name,
+                random.choice(emperors).id,
                 random.randint(1, 100),
                 random.randint(1, 100),
                 random.randint(1, 100)
@@ -53,8 +55,8 @@ def generate(humans, warrior_types):
             Warrior
                 (
                 human.id,
-                random.choice(warrior_types),
-                random.choice(generals),
+                random.choice(warrior_types).name,
+                random.choice(generals).id,
                 random.randint(1, 100),
                 random.randint(1, 100),
                 random.randint(1, 100)

@@ -1,3 +1,5 @@
+def headers():
+   return "ИД,Название"
 class Subject:
     def __init__(self, id, name):
         self.id = id

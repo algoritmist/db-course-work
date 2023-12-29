@@ -1,5 +1,7 @@
 from enum import Enum
 
+def headers():
+   return "ИД,Описание"
 
 class Status(Enum):
    ВОЕННООБЯЗАННЫЙ = 0

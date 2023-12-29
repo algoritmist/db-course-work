@@ -1,6 +1,8 @@
 import random
 import pandas as pd
 
+def headers():
+   return "Название,Атака,Защита,Бонус_к_магии"
 class WarriorType:
     def __init__(self, name, attack, defence, magic_bonus):
         self.name = name
