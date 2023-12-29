@@ -1,1 +1,1 @@
-select * from ЧЕЛОВЕК;
+select * frasdom ЧЕЛОВЕК;
