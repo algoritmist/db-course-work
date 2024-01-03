@@ -17,4 +17,4 @@ class Contract:
 
 def generate(applications):
     success_applications = list(filter(lambda a: a.status == 1, applications))
-    return [Contract(id, application.id, random.randint(0, 1)) for id, application in enumerate(success_applications)]
+    return [Contract(id, application.id, random.randint(0, 2)) for id, application in enumerate(success_applications)]

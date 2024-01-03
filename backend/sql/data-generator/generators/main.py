@@ -13,6 +13,8 @@ import priveleges
 import contract
 import journal
 import warrior_spell
+import contract_status
+import application_status
 
 MAX_PEOPLE = 10**5
 
@@ -105,4 +107,16 @@ warrior_spells = warrior_spell.generate(warriors, spells)
 with open("../out/warrior_spells.csv", "w") as f:
     f.write(warrior_spell.headers()+"\n")
     [f.write(warrior_spell.__repr__()+"\n") for warrior_spell in warrior_spells]
+    f.close()
+
+contract_statuses = contract_status.ContractStatus
+with open("../out/contract_status.csv", "w") as f:
+    f.write(contract_status.headers()+"\n")
+    [f.write(f"{status.value},{status.name}\n") for status in contract_statuses]
+    f.close()
+
+application_statuses = application_status.ApplicationStatus
+with open("../out/application_status.csv", "w") as f:
+    f.write(application_status.headers()+"\n")
+    [f.write(f"{status.value},{status.name}\n") for status in application_statuses]
     f.close()

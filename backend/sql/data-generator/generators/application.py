@@ -22,7 +22,7 @@ def generate(humans, request_types):
     id = 0
     for human in rich_humans:
         for requests in range(random.randint(0, 2)):
-            status = 1 if random.randint(0, 1) == 1 else 0
+            status = random.randint(0, 1)
             request_type = random.choice(request_types).id
             applications.append(Application(id, human.id, request_type, status))
             id += 1
