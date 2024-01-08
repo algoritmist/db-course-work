@@ -1,6 +1,7 @@
 create table СТАТУС
 (
     ИД       serial primary key,
+    НОМЕР_СТАТУСА int not null,
     НАЗВАНИЕ varchar not null
 );
 

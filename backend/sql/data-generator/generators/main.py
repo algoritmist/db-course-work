@@ -34,7 +34,7 @@ with open("../out/ТИП_ВОИНА.csv", "w") as f:
 statuses = status.Status
 with open("../out/СТАТУС.csv", "w") as f:
     f.write(status.headers() + "\n")
-    [f.write(f"{status.value},{status.name}\n") for status in statuses]
+    [f.write(f"{status.value},{status.value},{status.name}\n") for status in statuses]
     f.close()
 
 humans = human.generate(MAX_PEOPLE)
