@@ -25,7 +25,8 @@ def generate(humans):
             name = line.strip()
             if id == 1:
                 for human in humans:
-                    subjects.append(Subject(id, name, human.id))
+                    subjects.append(Subject(_id, name, human.id))
+                    _id += 1
                 continue
             for human in list(random.sample(humans, len(humans) // 10)):
                 if random.randint(0, 10) == 10:

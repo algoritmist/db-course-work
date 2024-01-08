@@ -1,62 +1,62 @@
 НАЗВАНИЕ,УРОН,ЭФФЕКТ
-Summoning Charm,76,Summons an object
-Water-Making Spell,100,Conjures water
-Launch an object up into the air,8,Rockets target upward
-Unlocking Charm,48,Unlocks target
-Spider repelling spell,44,Repels spiders
-Slowing Charm,91,Slows or stops target's velocity
-Killing Curse,7,Instantaneous death
-Exploding Charm,99,Small explosion
-Brackium Emendo,16,Mends bones
-Cistem Aperio,6,Opens chests
-Locking Spell,81,Locks doors
-Blasting Curse,1,Explosion
-Cruciatus Curse,83,Excruciating pain
-Severing Charm,67,Cuts objects
-Dissendium,20,Reveals secret passages
-Engorgement Charm,57,Causes swelling
-Episkey,97,Heals minor injuries
-Patronus Charm,35,Conjures a spirit guardian
-Disarming Charm,29,Disarms an opponent
-Expulso Curse,56,Blows things up
-General Counter-Spell,26,Terminates all spell effects
-Human Presence Revealing Spell,46,Reveals human presence
-Freezing Charm,47,Stops movement and actions of the target
-Impediment Jinx,83,Hinders movement
-Imperius Curse,30,Total control over the victim
-Incarcerous Spell,60,Binds target in ropes
-Fire-Making Spell,73,Conjures flames
-Levicorpus,0,Suspends people by the ankles
-Locomotion Charm,1,Moves objects in midair
-Leg-Locker Curse,97,Sticks legs together
-Wand-Lighting Charm,59,Illuminates the wand tip
-Lumos Maxima,38,Produces bright light
-Lumos Solem Spell,21,Produces sunlight
-Muffliato Charm,98,Conceals sound
-Wand-Extinguishing Charm,19,Extinguishes wandlight
-Memory Charm,10,Erases memories
-Oculus Reparo,7,Repairs glasses
-Oppugno Jinx,75,Assaults target with directed object(s)
-Peskipiksi Pesternomi,76,Nothing (supposedly captures pixies)
-Full Body-Bind Curse,89,Temporary Paralysis
-Piertotum Locomotor,22,Animates target
-Portus,74,Turns object into Portkey
-Reverse Spell,7,Shows the previous spells cast by a wand
-Shield Charm,34,Reflects spells and blocks physical forces
-Protego Maxima,95,Summons a large protective barrier
-Protego totalum,54,Shields an area
-Shrinking Charm,70,Shrinks target
-Revulsion Jinx,90,Forces target to let go
-Mending Charm,51,Fixes broken objects
-Repello Inimicum,43,Repels enemies. If used with Protego Maxima and Fianto Duri
-Muggle-Repelling Charm,64,Repels Muggles
-Revelio Charm,55,Reveals secrets about a person or object
-Tickling Charm,76,Tickles and weakens
-Boggart-Banishing Spell,83,Turns a Boggart into something amusing
-Salvio hexia,49,Hex deflection
-Sectumsempra,92,Lacerates target
-Snake Summons Spell,2,Conjures snake
-Stunning Spell,53,Knocks out target
-Vera Verto,93,Transforms animals into water goblets
-Snake-Vanishing Spell,53,Vanishes snakes
-Levitation Charm,20,Makes objects fly
+Summoning Charm,25,Summons an object
+Water-Making Spell,59,Conjures water
+Launch an object up into the air,100,Rockets target upward
+Unlocking Charm,69,Unlocks target
+Spider repelling spell,10,Repels spiders
+Slowing Charm,12,Slows or stops target's velocity
+Killing Curse,74,Instantaneous death
+Exploding Charm,45,Small explosion
+Brackium Emendo,60,Mends bones
+Cistem Aperio,5,Opens chests
+Locking Spell,27,Locks doors
+Blasting Curse,4,Explosion
+Cruciatus Curse,72,Excruciating pain
+Severing Charm,91,Cuts objects
+Dissendium,93,Reveals secret passages
+Engorgement Charm,0,Causes swelling
+Episkey,40,Heals minor injuries
+Patronus Charm,50,Conjures a spirit guardian
+Disarming Charm,11,Disarms an opponent
+Expulso Curse,2,Blows things up
+General Counter-Spell,25,Terminates all spell effects
+Human Presence Revealing Spell,61,Reveals human presence
+Freezing Charm,49,Stops movement and actions of the target
+Impediment Jinx,30,Hinders movement
+Imperius Curse,94,Total control over the victim
+Incarcerous Spell,46,Binds target in ropes
+Fire-Making Spell,16,Conjures flames
+Levicorpus,15,Suspends people by the ankles
+Locomotion Charm,46,Moves objects in midair
+Leg-Locker Curse,94,Sticks legs together
+Wand-Lighting Charm,6,Illuminates the wand tip
+Lumos Maxima,78,Produces bright light
+Lumos Solem Spell,76,Produces sunlight
+Muffliato Charm,53,Conceals sound
+Wand-Extinguishing Charm,65,Extinguishes wandlight
+Memory Charm,62,Erases memories
+Oculus Reparo,9,Repairs glasses
+Oppugno Jinx,65,Assaults target with directed object(s)
+Peskipiksi Pesternomi,92,Nothing (supposedly captures pixies)
+Full Body-Bind Curse,15,Temporary Paralysis
+Piertotum Locomotor,4,Animates target
+Portus,93,Turns object into Portkey
+Reverse Spell,32,Shows the previous spells cast by a wand
+Shield Charm,75,Reflects spells and blocks physical forces
+Protego Maxima,4,Summons a large protective barrier
+Protego totalum,73,Shields an area
+Shrinking Charm,18,Shrinks target
+Revulsion Jinx,68,Forces target to let go
+Mending Charm,7,Fixes broken objects
+Repello Inimicum,81,Repels enemies. If used with Protego Maxima and Fianto Duri
+Muggle-Repelling Charm,11,Repels Muggles
+Revelio Charm,95,Reveals secrets about a person or object
+Tickling Charm,15,Tickles and weakens
+Boggart-Banishing Spell,5,Turns a Boggart into something amusing
+Salvio hexia,36,Hex deflection
+Sectumsempra,33,Lacerates target
+Snake Summons Spell,95,Conjures snake
+Stunning Spell,13,Knocks out target
+Vera Verto,79,Transforms animals into water goblets
+Snake-Vanishing Spell,78,Vanishes snakes
+Levitation Charm,6,Makes objects fly
