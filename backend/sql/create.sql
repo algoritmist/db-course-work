@@ -44,9 +44,10 @@ create table ВОИН
 
 create table ПРЕДМЕТ
 (
-    ИД       serial primary key,
+    ИД       int,
     НАЗВАНИЕ varchar not null,
     ЧЛВК_ИД  int references ЧЕЛОВЕК (ИД) on delete cascade
+    PRIMARY KEY (ИД, ЧЛВК_ИД)
 );
 
 create table ЗАКЛИНАНИЕ
