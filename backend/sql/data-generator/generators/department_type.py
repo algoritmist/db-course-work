@@ -1,5 +1,5 @@
 def headers():
-    return "Название;Расшифровка"
+    return "ИД;НАЗВАНИЕ;РАСШИФРОВКА"
 
 
 class DepartmentType:

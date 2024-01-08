@@ -2,7 +2,7 @@ import random
 
 
 def headers():
-    return "ИД,ЗАЯВКА_ИД,Статус_выполнения"
+    return "ИД,ЗАЯВКА_ИД,СТАТУС_ВЫПОЛНЕНИЯ"
 
 
 class Contract:

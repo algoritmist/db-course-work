@@ -2,7 +2,7 @@ from enum import Enum
 
 
 def headers():
-    return "ИД,Описание"
+    return "ИД,ОПИСАНИЕ"
 class ApplicationStatus(Enum):
     ОБРАБАТЫВАЕТСЯ=0
     ОТКЛОНЕНО=1

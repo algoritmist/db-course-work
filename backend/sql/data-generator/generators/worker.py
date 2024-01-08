@@ -2,7 +2,7 @@ import random
 from priveleges import Priveleges
 
 def headers():
-   return "ЧЛВК_ИД,ГРУППА_ИД,УРОВЕНЬ_ДОСТУПА_ИД"
+   return "ЧЛВК_ИД,ОТДЕЛ_ИД,УРОВЕНЬ_ДОСТУПА"
 class Worker:
     def __init__(self, human_id, group_id, priveleges):
         self.human_id = human_id

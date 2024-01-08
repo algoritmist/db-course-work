@@ -5,7 +5,7 @@ from faker import Faker
 fake = Faker('ru_RU')
 
 def headers():
-    return "ИД,Имя,Фамилия,Пол,Статус_ИД,Дата_рождения,Баланс"
+    return "ИД,ИМЯ,ФАМИЛИЯ,ПОЛ,ДАТА_РОЖДЕНИЯ,СТАТУС_ИД,БАЛАНС"
 class Human:
     def __init__(self, id, gender, first_name, last_name, date_of_birth, status_id, money):
         self.id = id
@@ -20,10 +20,10 @@ class Human:
         return f"{self.id},{self.first_name},{self.last_name},{self.gender},{self.date_of_birth},{self.status_id},{self.money}"
 
 def generate_name_and_gender():
-        gender = 'M' if random.randint(0,1) == 0 else 'F'
-        first_name = fake.first_name_male() if gender == 'M' else fake.first_name_female()
-        last_name = fake.last_name_male() if gender == 'M' else fake.last_name_female()
-        return {'gender':gender, 'first_name': first_name, 'last_name': last_name}
+        gender = 'М' if random.randint(0,1) == 0 else 'Ж'
+        first_name = fake.first_name_male() if gender == 'М' else fake.first_name_female()
+        last_name = fake.last_name_male() if gender == 'М' else fake.last_name_female()
+        return {'gender': gender, 'first_name': first_name, 'last_name': last_name}
 
 def generate_random_status():
     r = random.randint(0, 10)

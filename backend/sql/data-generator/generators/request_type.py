@@ -1,7 +1,7 @@
 from priveleges import Priveleges
 
 def headers():
-    return "ИД,Описание,Уровень_доступа"
+    return "ИД,РАСШИФРОВКА,УРОВЕНЬ_ДОСТУПА"
 class RequestType:
     def __init__(self, id, description, priveleges):
         self.id = id

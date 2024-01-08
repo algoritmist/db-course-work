@@ -3,7 +3,7 @@ import random
 from status import *
 
 def headers():
-   return "ЧЛВК_ИД,Тип_воина,Предводитель_ИД,Здоровье,Броня,Оружие"
+   return "ЧЛВК_ИД,ТИП_ВОИНА,ПРЕДВОДИТЕЛЬ_ИД,ЗДОРОВЬЕ,БРОНЯ,ОРУЖИЕ"
 
 class Warrior:
     def __init__(self, human_id, warrior_type, leader_id, health, armor_health, weapon_health):
@@ -29,7 +29,7 @@ def generate(humans, warrior_types):
                 (
                 human.id,
                 random.choice(warrior_types).name,
-                (-1),
+                None,
                 random.randint(1, 100),
                 random.randint(1, 100),
                 random.randint(1, 100)

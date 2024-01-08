@@ -4,7 +4,7 @@ from faker import Faker
 fake = Faker('ru_RU')
 
 def headers():
-    return "ИД,Страна,Город,Широта,Долгота"
+    return "ЧЛВК_ИД,СТРАНА,ГОРОД,ШИРОТА,ДОЛГОТА"
 class Location:
     def __init__(self, human_id, country, city, longitude, latitude):
         self.human_id = human_id

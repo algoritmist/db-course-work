@@ -7,7 +7,7 @@ drop table if exists МЕСТОПОЛОЖЕНИЕ cascade;
 drop table if exists СТАТУС cascade;
 drop table if exists ЧЕЛОВЕК cascade;
 drop table if exists ВОИН cascade;
-drop table if exists ВОИН_ЗАКЛИНАНИЕ cascade;
+drop table if exists ЗАКЛИНАНИЯ cascade;
 drop table if exists ПРЕДМЕТ cascade;
 drop table if exists ТИП_ЗАПРОСА cascade;
 drop table if exists ЗАЯВКА cascade;
