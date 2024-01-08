@@ -1,0 +1,16 @@
+\copy СТАТУС from 'out/СТАТУС.csv' with delimiter ',' csv header;
+\copy ЧЕЛОВЕК from 'out/ЧЕЛОВЕК.csv' with delimiter ',' csv header;
+\copy МЕСТОПОЛОЖЕНИЕ from 'out/МЕСТОПОЛОЖЕНИЕ.csv' with delimiter ',' csv header;
+\copy ТИП_ВОИНА from 'out/ТИП_ВОИНА.csv' with delimiter ',' csv header;
+\copy ВОИН from 'out/ВОИН.csv' with delimiter ',' csv header WITH NULL AS 'null';
+\copy ПРЕДМЕТ from 'out/ПРЕДМЕТ.csv' with delimiter ',' csv header;
+\copy ЗАКЛИНАНИЕ from 'out/ЗАКЛИНАНИЕ.csv' with delimiter ',' csv header;
+\copy ЗАКЛИНАНИЯ_ВОИНА from 'out/ЗАКЛИНАНИЯ_ВОИНА.csv' with delimiter ',' csv header;
+\copy ТИП_ЗАПРОСА from 'out/ТИП_ЗАПРОСА.csv' with delimiter ',' csv header;
+\copy ПРИВИЛЕГИИ from 'out/ПРИВИЛЕГИИ.csv' with delimiter ',' csv header;
+\copy ОТДЕЛ from 'out/ОТДЕЛ.csv' with delimiter ',' csv header;
+\copy СТАТУС_ЗАЯВКИ from 'out/СТАТУС_ЗАЯВКИ.csv' with delimiter ',' csv header;
+\copy СТАТУС_КОНТРАКТА from 'out/СТАТУС_КОНТРАКТА.csv' with delimiter ',' csv header;
+\copy ЗАЯВКА from 'out/ЗАЯВКА.csv' with delimiter ',' csv header;
+\copy КОНТРАКТ from 'out/КОНТРАКТ.csv' with delimiter ',' csv header;
+\copy ВЕДОМОСТЬ from 'out/ВЕДОМОСТЬ.csv' with delimiter ',' csv header;
