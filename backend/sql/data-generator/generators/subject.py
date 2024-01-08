@@ -17,6 +17,7 @@ class Subject:
 
 def generate(humans):
     subjects = []
+    _id = 0
     with open("../data/subjects.csv") as f:
         for id, line in enumerate(f):
             if id == 0:
@@ -28,5 +29,6 @@ def generate(humans):
                 continue
             for human in list(random.sample(humans, len(humans) // 10)):
                 if random.randint(0, 10) == 10:
-                    subjects.append(Subject(id, name, human.id))
+                    subjects.append(Subject(_id, name, human.id))
+                    _id += 1
     return subjects
