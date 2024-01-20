@@ -1,7 +1,7 @@
 from priveleges import Priveleges
 
 def headers():
-    return "ИД,РАСШИФРОВКА,УРОВЕНЬ_ДОСТУПА"
+    return "ИД,РАСШИФРОВКА"
 class RequestType:
     def __init__(self, id, description, priveleges):
         self.id = id
@@ -9,7 +9,7 @@ class RequestType:
         self.priveleges = priveleges
 
     def __repr__(self):
-        return f"{self.id},{self.description},{self.priveleges}"
+        return f"{self.id},{self.description}"
 
 
 def generate():

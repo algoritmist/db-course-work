@@ -2,7 +2,7 @@ import random
 
 
 def headers():
-   return "ВОИН_ИД,ЗАКЛИНАНИЕ_НАЗВАНИЕ,ДЛИТЕЛЬНОСТЬ"
+   return "ВОИН_ИД,ЗАКЛИНАНИЕ_НАЗВАНИЕ"
 class WarriorSpell:
     def __init__(self, warrior_id, spell_name, duration):
         self.warrior_id = warrior_id
@@ -10,7 +10,7 @@ class WarriorSpell:
         self.duration = duration
 
     def __repr__(self):
-        return f"{self.warrior_id},{self.spell_name},{self.duration}"
+        return f"{self.warrior_id},{self.spell_name}"
 
 
 def generate(warriors, spells):

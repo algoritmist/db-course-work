@@ -13,12 +13,14 @@ create table ЧЕЛОВЕК
     ПОЛ           varchar check (ПОЛ = 'М' or ПОЛ = 'Ж'),
     ДАТА_РОЖДЕНИЯ timestamp,
     СТАТУС_ИД     int references СТАТУС (ИД) on delete cascade,
-    БАЛАНС        int     not null
+    БАЛАНС        int     not null,
+    ПРОДАЖА_ДУШИ  int,
+    МЕСТОПОЛОЖЕНИЕ int references МЕСТОПОЛОЖЕНИЕ (ИД) pn delete cascade
 );
 
 create table МЕСТОПОЛОЖЕНИЕ
 (
-    ЧЛВК_ИД int references ЧЕЛОВЕК (ИД) on delete cascade,
+    ИД      serial primary key,
     СТРАНА  varchar,
     ГОРОД   varchar,
     ШИРОТА  real,
@@ -47,36 +49,29 @@ create table ПРЕДМЕТ
 (
     ИД       serial primary key,
     НАЗВАНИЕ varchar not null,
-    ЧЛВК_ИД  int references ЧЕЛОВЕК (ИД) on delete cascade
+    ЧЛВК_ИД  int references ЧЕЛОВЕК (ИД) on delete cascade,
+    ЦЕНА     int
 );
 
 create table ЗАКЛИНАНИЕ
 (
     НАЗВАНИЕ varchar primary key,
-    УРОН     int     not null,
-    ЭФФЕКТ   varchar not null
+    УРОН     int     not null
 );
 
 create table ЗАКЛИНАНИЯ_ВОИНА
 (
     ВОИН_ИД             int references ВОИН (ЧЛВК_ИД) on delete cascade,
     ЗАКЛИНАНИЕ_НАЗВАНИЕ varchar references ЗАКЛИНАНИЕ (НАЗВАНИЕ) on delete cascade,
-    ДЛИТЕЛЬНОСТЬ        int not null,
     PRIMARY KEY (ВОИН_ИД, ЗАКЛИНАНИЕ_НАЗВАНИЕ)
 );
 
 create table ТИП_ЗАПРОСА
 (
     ИД              serial primary key,
-    РАСШИФРОВКА     varchar not null,
-    УРОВЕНЬ_ДОСТУПА integer not null
+    РАСШИФРОВКА     varchar not null
 );
 
-create table ПРИВИЛЕГИИ
-(
-    ИД       serial primary key,
-    ОПИСАНИЕ varchar not null
-);
 
 create table ОТДЕЛ
 (
@@ -89,7 +84,7 @@ create table РАБОТНИК
 (
     ЧЛВК_ИД         int references ЧЕЛОВЕК (ИД) on delete cascade,
     ОТДЕЛ_ИД        int references ОТДЕЛ (ИД) on delete cascade,
-    УРОВЕНЬ_ДОСТУПА int references ПРИВИЛЕГИИ (ИД) on delete cascade
+    ЗАНЯТОСТЬ       int
 );
 
 create table СТАТУС_ЗАЯВКИ
@@ -111,7 +106,8 @@ create table ЗАЯВКА
     ТИП_ЗАПРОСА      int references ТИП_ЗАПРОСА (ИД) on delete cascade,
     ЦЕЛЬ_ЧЛВК_ИД     int references ЧЕЛОВЕК (ИД) on delete cascade,
     ЦЕЛЬ_ПРЕДМЕТ_ИД  int references ПРЕДМЕТ (ИД) on delete cascade,
-    СТАТУС_ОДОБРЕНИЯ int references СТАТУС_ЗАЯВКИ (ИД) on delete cascade
+    СТАТУС_ОДОБРЕНИЯ int references СТАТУС_ЗАЯВКИ (ИД) on delete cascade,
+    ТИП_ВОИНА        varchar references ТИП_ВОИНА (ТИП) on delete cascade
 );
 
 create table КОНТРАКТ
@@ -125,8 +121,14 @@ create table ВЕДОМОСТЬ
 (
     ИД              serial primary key,
     КОНТРАКТ        int references КОНТРАКТ (ИД) on delete cascade,
-    ПРИМЕЧАНИЕ      varchar not null,
     ОТДЕЛ           int references ОТДЕЛ (ИД) on delete cascade,
     ДАТА_ЗАПРОСА    timestamp,
-    ДАТА_ВЫПОЛНЕНИЯ timestamp
+    ДАТА_ВЫПОЛНЕНИЯ timestamp,
+    МЕСТО_ПРОВЕДЕНИЯ int references МЕСТОПОЛОЖЕНИЕ (ИД) on delete cascade
+);
+
+create table СТОИМОСТЬ
+(
+    НАЗВАНИЕ        varchar primary key,
+    СТОИМОСТЬ       int
 );

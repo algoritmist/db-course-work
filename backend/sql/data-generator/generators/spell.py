@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def headers():
-    return "НАЗВАНИЕ,УРОН,ЭФФЕКТ"
+    return "НАЗВАНИЕ,УРОН"
 class Spell:
     def __init__(self, name, damage, effect):
         self.name = name
@@ -12,7 +12,7 @@ class Spell:
         self.effect = effect
 
     def __repr__(self):
-        return f"{self.name},{self.damage},{self.effect}"
+        return f"{self.name},{self.damage}"
 
 
 def generate():

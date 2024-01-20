@@ -9,12 +9,12 @@ import worker
 import department_type
 import request_type
 import application
-import priveleges
 import contract
 import journal
 import warrior_spell
 import contract_status
 import application_status
+import cost
 
 MAX_PEOPLE = 10 ** 5
 
@@ -37,7 +37,13 @@ with open("../out/СТАТУС.csv", "w") as f:
     [f.write(f"{status.value},{status.value},{status.name}\n") for status in statuses]
     f.close()
 
-humans = human.generate(MAX_PEOPLE)
+locations = location.generate()
+with open("../out/МЕСТОПОЛОЖЕНИЕ.csv", "w") as f:
+    f.write(location.headers() + "\n")
+    [f.write(location.__repr__() + "\n") for location in locations]
+    f.close()
+
+humans = human.generate(MAX_PEOPLE, locations)
 with open("../out/ЧЕЛОВЕК.csv", "w") as f:
     f.write(human.headers() + "\n")
     [f.write(human.__repr__() + "\n") for human in humans]
@@ -49,11 +55,6 @@ with open("../out/ПРЕДМЕТ.csv", "w") as f:
     [f.write(subject.__repr__() + "\n") for subject in subjects]
     f.close()
 
-locations = location.generate(humans)
-with open("../out/МЕСТОПОЛОЖЕНИЕ.csv", "w") as f:
-    f.write(location.headers() + "\n")
-    [f.write(location.__repr__() + "\n") for location in locations]
-    f.close()
 
 warriors = warrior.generate(humans, warrior_types)
 with open("../out/ВОИН.csv", "w") as f:
@@ -78,12 +79,6 @@ with open("../out/ТИП_ЗАПРОСА.csv", "w") as f:
     [f.write(request.__repr__() + "\n") for request in request_types]
     f.close()
 
-privs = priveleges.Priveleges
-with open("../out/ПРИВИЛЕГИИ.csv", "w") as f:
-    f.write(priveleges.headers() + "\n")
-    [f.write(f"{privelege.value},{privelege.name}\n") for privelege in privs]
-    f.close()
-
 applications = application.generate(humans, request_types, subjects)
 with open("../out/ЗАЯВКА.csv", "w") as f:
     f.write(application.headers() + "\n")
@@ -96,7 +91,7 @@ with open("../out/КОНТРАКТ.csv", "w") as f:
     [f.write(contract.__repr__() + "\n") for contract in contracts]
     f.close()
 
-jl = journal.generate(applications, contracts)
+jl = journal.generate(applications, contracts, locations)
 with open("../out/ВЕДОМОСТЬ.csv", "w") as f:
     f.write(journal.headers() + "\n")
     [f.write(je.__repr__() + "\n") for je in jl]
@@ -119,4 +114,10 @@ application_statuses = application_status.ApplicationStatus
 with open("../out/СТАТУС_ЗАЯВКИ.csv", "w") as f:
     f.write(application_status.headers() + "\n")
     [f.write(f"{status.value},{status.name}\n") for status in application_statuses]
+    f.close()
+
+costs = cost.generate()
+with open("../out/СТОИМОСТЬ.csv", "w") as f:
+    f.write(cost.headers() + "\n")
+    [f.write(fcost.__repr__() + "\n") for fcost in costs]
     f.close()
