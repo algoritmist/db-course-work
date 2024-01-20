@@ -1,5 +1,5 @@
 
-Create function find_person(ИД_З int, ИДЧ_Ц int)
+Create function find_person(ИД_З int, ИМЯ_З varchar, ФАМИЛИЯ_З varchar)
 Returns void AS $$
 DECLARE
 	main_worker int := 0;
@@ -7,6 +7,7 @@ DECLARE
 	ask int := 0;
 	contract int := 0;
 	journal int := 0;
+	result_id int := 0;
 BEGIN
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
@@ -43,31 +44,28 @@ BEGIN
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 	contract := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
-	--journal := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
+	journal := Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'),CURDATE) Returning ИД;
 
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Отдел поиска людей')) then
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
-		raise notice 'Нет свободных сотрудников, повторите попытку позже';
+		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -1;
 	endif;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'));
 	pg_sleep(3);
-	
 
-
-
-	If exists(SELECT * FROM РАБОТНИК where ОТДЕЛ_ИД = (SELECT ИД FROM ОТДЕЛ where НАЗВАНИЕ=’ФИНАНСОВЫЙ ОТДЕЛ’) and СТАТУС_РАБОТНИКА=’Свободен’) then RAISE NOTICE 'Сейчас нет свободных сотрудников, заявка будет обработана позже';
-	Else 
-		RAISE NOTICE 'Работает финансовый отдел';
-		//Подсчет стоимости
-		If (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)<100 then
-			RAISE NOTICE 'Недостаточно средств, заявка отклонена';
-		Else
-			
-			INSERT INTO КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values(CURVAL(PG_GET_SERIAL_SEQUENCE(‘ЗАЯВКА’,’ИД’))-1, select * from СТАТУС_КОНТРАКТА where ОПИСАНИЕ=’ВЫПОЛНЯЕТСЯ’));
-			Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(CURVAL(PG_GET_SERIAL_SEQUENCE(‘КОНТРАКТ’,’ИД’))-1, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ=’ВОЕННЫЙ ОТДЕЛ’),CURDATE);
-		Endif;
-	Endif;
+	if not exists(select * from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З) then
+		raise notice 'Запрашиваемый человек не найден';
+		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
+		update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE where ИД=journal;
+		update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
+		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
+		return 0;
+	result_id := select МЕСТОПОЛОЖЕНИЕ from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З;
+	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
+	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE where ИД=journal;
+	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
+	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 End;
 $$ language plpgsql;
 
