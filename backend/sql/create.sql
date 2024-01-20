@@ -126,3 +126,9 @@ create table ВЕДОМОСТЬ
     ДАТА_ВЫПОЛНЕНИЯ timestamp,
     МЕСТО_ПРОВЕДЕНИЯ int references МЕСТОПОЛОЖЕНИЕ (ИД) on delete cascade
 );
+
+create table СТОИМОСТЬ
+(
+    НАЗВАНИЕ        varchar primary key,
+    СТОИМОСТЬ       int
+);
