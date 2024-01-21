@@ -84,7 +84,7 @@ create table РАБОТНИК
 (
     ЧЛВК_ИД         int references ЧЕЛОВЕК (ИД) on delete cascade,
     ОТДЕЛ_ИД        int references ОТДЕЛ (ИД) on delete cascade,
-    ЗАНЯТОСТЬ       int
+    ЗАНЯТОСТЬ       bool
 );
 
 create table СТАТУС_ЗАЯВКИ
