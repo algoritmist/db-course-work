@@ -14,7 +14,7 @@ create table ЧЕЛОВЕК
     ДАТА_РОЖДЕНИЯ timestamp,
     СТАТУС_ИД     int references СТАТУС (ИД) on delete cascade,
     БАЛАНС        int     not null,
-    ПРОДАЖА_ДУШИ  int,
+    ПРОДАЖА_ДУШИ  bool,
     МЕСТОПОЛОЖЕНИЕ int references МЕСТОПОЛОЖЕНИЕ (ИД) on delete cascade
 );
 
