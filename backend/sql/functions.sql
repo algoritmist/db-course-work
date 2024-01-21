@@ -13,11 +13,11 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	main_worker := select ЧЛВК_ИД from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
+	select ЧЛВК_ИД into main_worker from РАБОТНИК  where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
-	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Найти человека'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
 
 	
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
@@ -26,9 +26,9 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 	
 	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти человека') then
 		RAISE NOTICE 'Недостаточно средств, заявка отклонена';
@@ -42,16 +42,16 @@ BEGIN
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти человека') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	contract := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
-	journal := Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'),CURDATE) Returning ИД;
+	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'),CURDATE) Returning ИД into journal;
 
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Отдел поиска людей')) then
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'));
-	pg_sleep(3);
+	select * into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей');
+	select pg_sleep(3);
 
 	if not exists(select * from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З) then
 		raise notice 'Запрашиваемый человек не найден';
@@ -61,7 +61,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -4;
 	end if;
-	result_id := select МЕСТОПОЛОЖЕНИЕ from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З;
+	select МЕСТОПОЛОЖЕНИЕ into result_id from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
@@ -70,7 +70,7 @@ BEGIN
 End;
 $$ language plpgsql;
 
-Create function find_	object(ИД_З int, ПРЕДМЕТ_З varchar)
+Create function find_object(ИД_З int, ПРЕДМЕТ_З varchar)
 Returns int AS $$
 DECLARE
 	main_worker int := 0;
@@ -84,11 +84,11 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
+	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
-	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Найти предмет'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
 
 	
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
@@ -97,9 +97,9 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 	
 	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') then
 		RAISE NOTICE 'Недостаточно средств, заявка отклонена';
@@ -113,16 +113,16 @@ BEGIN
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	contract := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
-	journal := Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел'),CURDATE) Returning ИД;
+	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел'),CURDATE) Returning ИД into journal;
 
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Торговый отдел')) then
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел'));
-	pg_sleep(3);
+	 select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел');
+	select pg_sleep(3);
 
 	if not exists(select * from ПРЕДМЕТ where НАЗВАНИЕ=ПРЕДМЕТ_З) then
 		raise notice 'Предмет не найден';
@@ -132,7 +132,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -4;
 	end if;
-	result_id := select ИД from ЧЕЛОВЕК inner join ПРЕДМЕТ on ЧЕЛОВЕК.ИД=ПРЕДМЕТ.ЧЛВК_ИД where ПРЕДМЕТ.НАЗВАНИЕ=ПРЕДМЕТ_З;
+	select ИД into result_id from ЧЕЛОВЕК inner join ПРЕДМЕТ on ЧЕЛОВЕК.ИД=ПРЕДМЕТ.ЧЛВК_ИД where ПРЕДМЕТ.НАЗВАНИЕ=ПРЕДМЕТ_З;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
@@ -159,16 +159,16 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return 1;
 	end if;
-	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
+	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
 	if exists(select * from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД where СТАТУС_РАСШИФРОВКА='Император' and ЧЛВК_ИД=ИД_Ц) then
-		reaise notice 'НЕЛЬЗЯ НАПАДАТЬ НА ИМПЕРАТОРА';
+		raise notice 'НЕЛЬЗЯ НАПАДАТЬ НА ИМПЕРАТОРА';
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -1;
 	end if;
-	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Устроить войну'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
 
 	
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
@@ -177,14 +177,14 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -2;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
-	sum_health := select sum(ЗДОРОВЬЕ+БРОНЯ+БОНУС_К_БРОНЕ) from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц;
-	sum_damage := select sum(ОРУЖИЕ+БОНУС_К_ОРУЖИЮ+БОНУС_К_МАГИИ+Урон) from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА inner join ВОИН_ЗАКЛИНАНИЕ on ВОИН.ЧЛВК_ИД=ВОИН_ЗАКЛИНАНИЕ.ИД_ВОИНА inner join ЗАКЛИНАНИЕ on ЗАКЛИНАНИЕ.Название=ЗАКЛИНАНИЕ.Название where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц group by ЧЛВК_ИД ;
+	select sum(ЗДОРОВЬЕ+БРОНЯ+БОНУС_К_БРОНЕ) into sum_health from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц;
+	select sum(ОРУЖИЕ+БОНУС_К_ОРУЖИЮ+БОНУС_К_МАГИИ+Урон) into sum_damage from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА inner join ВОИН_ЗАКЛИНАНИЕ on ВОИН.ЧЛВК_ИД=ВОИН_ЗАКЛИНАНИЕ.ИД_ВОИНА inner join ЗАКЛИНАНИЕ on ЗАКЛИНАНИЕ.Название=ЗАКЛИНАНИЕ.Название where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц group by ЧЛВК_ИД ;
 
-	min_count := select min(count) from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
+	select min(count) into min_count from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
                 inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА  inner join ВОИН_ЗАКЛИНАНИЕ on ВОИН.ЧЛВК_ИД=ВОИН_ЗАКЛИНАНИЕ.ИД_ВОИНА inner join ЗАКЛИНАНИЕ on ВОИН_ЗАКЛИНАНИЕ.Название=ЗАКЛИНАНИЕ.Название
                 where СТАТУС.РАСШИФРОВКА='СОЛДАТ' and ИД_ПРЕДВОДИТЕЛЯ<>ИД_Ц group by ИД_ПРЕДВОДИТЕЛЯ having sum(ЗДОРОВЬЕ+БРОНЯ+БОНУС_К_БРОНЕ)>=sum_damage and sum(ОРУЖИЕ+БОНУС_К_ОРУЖИЮ+БОНУС_К_МАГИИ+Урон)>=sum_health) as cnt;
 	if min_count<=0 then
@@ -203,13 +203,13 @@ BEGIN
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	contract := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
-	journal := Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД;
+	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД into journal;
 
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'));
-	pg_sleep(3);
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел');
+	select pg_sleep(3);
 
-	warrior := select min(ИД_ПРЕДВОДИТЕЛЯ) from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
+	select min(ИД_ПРЕДВОДИТЕЛЯ) into warrior from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
                 group by ИД_ПРЕДВОДИТЕЛЯ) as cnt where count=min_count and ИД_ПРЕДВОДИТЕЛЯ<>ИД_Ц;
 
 	update ПРЕДМЕТ set ЧЛВК_ИД=null where ЧЛВК_ИД = any(select ЧЛВК_ИД from ВОИН where ИД_ПРЕДВОДИТЕЛЯ = ИД_Ц);
@@ -218,7 +218,7 @@ BEGIN
 	delete from ВОИН where ЧЛВК_ИД = ИД_Ц;
 	-- удаление достаточного кол-ва людей из нанимаемой армии происходит на беке
 
-	result_id := select ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ from ЧЕЛОВЕК inner join МЕСТОПОЛОЖЕНИЕ on ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ=МЕСТОПОЛОЖЕНИЕ_ИД where ЧЕЛОВЕК.ИД=ИД_Ц;
+	select ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ into result_id from ЧЕЛОВЕК inner join МЕСТОПОЛОЖЕНИЕ on ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ=МЕСТОПОЛОЖЕНИЕ_ИД where ЧЕЛОВЕК.ИД=ИД_Ц;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
@@ -246,16 +246,16 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return 1;
 	end if;
-	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
+	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
 	if exists(select * from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД where СТАТУС_РАСШИФРОВКА='Император' and ЧЛВК_ИД=ИД_Ц) then
-		reaise notice 'НЕЛЬЗЯ НАПАДАТЬ НА ИМПЕРАТОРА';
+		raise notice 'НЕЛЬЗЯ НАПАДАТЬ НА ИМПЕРАТОРА';
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -1;
 	end if;
-	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Устроить войну'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
 
 	
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
@@ -264,14 +264,14 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -2;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
-	sum_health := select sum(ЗДОРОВЬЕ+БРОНЯ+БОНУС_К_БРОНЕ) from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц;
-	sum_damage := select sum(ОРУЖИЕ+БОНУС_К_ОРУЖИЮ+БОНУС_К_МАГИИ+Урон) from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА inner join ВОИН_ЗАКЛИНАНИЕ on ВОИН.ЧЛВК_ИД=ВОИН_ЗАКЛИНАНИЕ.ИД_ВОИНА inner join ЗАКЛИНАНИЕ on ЗАКЛИНАНИЕ.Название=ЗАКЛИНАНИЕ.Название where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц group by ЧЛВК_ИД ;
+	select sum(ЗДОРОВЬЕ+БРОНЯ+БОНУС_К_БРОНЕ) into sum_health from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц;
+	select sum(ОРУЖИЕ+БОНУС_К_ОРУЖИЮ+БОНУС_К_МАГИИ+Урон) into sum_damage from ВОИН inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА inner join ВОИН_ЗАКЛИНАНИЕ on ВОИН.ЧЛВК_ИД=ВОИН_ЗАКЛИНАНИЕ.ИД_ВОИНА inner join ЗАКЛИНАНИЕ on ЗАКЛИНАНИЕ.Название=ЗАКЛИНАНИЕ.Название where ИД_ПРЕДВОДИТЕЛЯ=ИД_Ц group by ЧЛВК_ИД ;
 
-	min_count := select min(count) from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
+	select min(count) into min_count from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
                 inner join ТИП_ВОИНА on ТИП_ВОИНА.НАЗВАНИЕ=ВОИН.ТИП_ВОИНА  inner join ВОИН_ЗАКЛИНАНИЕ on ВОИН.ЧЛВК_ИД=ВОИН_ЗАКЛИНАНИЕ.ИД_ВОИНА inner join ЗАКЛИНАНИЕ on ВОИН_ЗАКЛИНАНИЕ.Название=ЗАКЛИНАНИЕ.Название
                 where СТАТУС.РАСШИФРОВКА='СОЛДАТ' and ИД_ПРЕДВОДИТЕЛЯ<>ИД_Ц group by ИД_ПРЕДВОДИТЕЛЯ having sum(ЗДОРОВЬЕ+БРОНЯ+БОНУС_К_БРОНЕ)>=sum_damage and sum(ОРУЖИЕ+БОНУС_К_ОРУЖИЮ+БОНУС_К_МАГИИ+Урон)>=sum_health) as cnt;
 	if min_count<=0 then
@@ -290,13 +290,13 @@ BEGIN
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	contract := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
-	journal := Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД;
+	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД into journal;
 
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'));
-	pg_sleep(3);
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел');
+	select pg_sleep(3);
 
-	warrior := select min(ИД_ПРЕДВОДИТЕЛЯ) from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
+	select min(ИД_ПРЕДВОДИТЕЛЯ) into warrior from (select ИД_ПРЕДВОДИТЕЛЯ,count(*) from ВОИН inner join ЧЕЛОВЕК on ЧЕЛОВЕК.ИД=ВОИН.ЧЛВК_ИД inner join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД
                 group by ИД_ПРЕДВОДИТЕЛЯ) as cnt where count=min_count and ИД_ПРЕДВОДИТЕЛЯ<>ИД_Ц;
 
 	 
@@ -307,7 +307,7 @@ BEGIN
 	delete from ВОИН where ЧЛВК_ИД = ИД_Ц;
 	-- удаление достаточного кол-ва людей из нанимаемой армии происходит на беке
 
-	result_id := select ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ from ЧЕЛОВЕК inner join МЕСТОПОЛОЖЕНИЕ on ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ=МЕСТОПОЛОЖЕНИЕ_ИД where ЧЕЛОВЕК.ИД=ИД_Ц;
+	select ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ into result_id from ЧЕЛОВЕК inner join МЕСТОПОЛОЖЕНИЕ on ЧЕЛОВЕК.МЕСТОПОЛОЖЕНИЕ=МЕСТОПОЛОЖЕНИЕ_ИД where ЧЕЛОВЕК.ИД=ИД_Ц;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
@@ -330,11 +330,11 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
+	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
-	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Стать воином'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
 
 	
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
@@ -343,9 +343,9 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 	
 	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Стать воином') then
 		RAISE NOTICE 'Недостаточно средств, заявка отклонена';
@@ -359,16 +359,16 @@ BEGIN
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Стать воином') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	contract := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
-	journal := Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД;
+	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД into journal;
 
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Военный отдел')) then
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'));
-	pg_sleep(3);
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел');
+	select pg_sleep(3);
 
 	insert into ВОИН(ЧЛВК_ИД,ЗДОРОВЬЕ, ОРУЖИЕ, БРОНЯ) values(ИД_З,floor(RAND()*100),floor(RAND()*100),floor(RAND()*100));
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
@@ -393,11 +393,11 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
+	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 
-	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Стать предводителем'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
 
 	
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
@@ -406,9 +406,9 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
-	pg_sleep(3);
+	select pg_sleep(3);
 	
 	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Стать предводителем') then
 		RAISE NOTICE 'Недостаточно средств, заявка отклонена';
@@ -422,16 +422,16 @@ BEGIN
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Стать предводителем') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	contract := insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ') returning ИД;
-	journal := Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД;
+	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'),CURDATE) Returning ИД into journal;
 
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Военный отдел')) then
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
 	end if;
-	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'));
-	pg_sleep(3);
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел');
+	select pg_sleep(3);
 
 	insert into ВОИН(ЧЛВК_ИД,ЗДОРОВЬЕ, ОРУЖИЕ, БРОНЯ) values(ИД_З,floor(RAND()*100),floor(RAND()*100),floor(RAND()*100));
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
@@ -441,4 +441,3 @@ BEGIN
 	return 0;
 End;
 $$ language plpgsql;
-
