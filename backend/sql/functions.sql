@@ -12,7 +12,7 @@ BEGIN
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
 	pg_sleep(3);
@@ -25,7 +25,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
 	pg_sleep(3);
@@ -36,7 +36,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -2;
-	endif;
+	end if;
 
 
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти человека') where ИД=ИД_З;
@@ -49,7 +49,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'));
 	pg_sleep(3);
 
@@ -60,6 +60,7 @@ BEGIN
 		update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -4;
+	end if;
 	result_id := select МЕСТОПОЛОЖЕНИЕ from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
@@ -82,7 +83,7 @@ BEGIN
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
 	pg_sleep(3);
@@ -95,7 +96,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
 	pg_sleep(3);
@@ -106,7 +107,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -2;
-	endif;
+	end if;
 
 
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
@@ -119,7 +120,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел'));
 	pg_sleep(3);
 
@@ -130,6 +131,7 @@ BEGIN
 		update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -4;
+	end if;
 	result_id := select ИД from ЧЕЛОВЕК inner join ПРЕДМЕТ on ЧЕЛОВЕК.ИД=ПРЕДМЕТ.ЧЛВК_ИД where ПРЕДМЕТ.НАЗВАНИЕ=ПРЕДМЕТ_З;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
@@ -156,7 +158,7 @@ BEGIN
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return 1;
-	endif;
+	end if;
 	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
 	pg_sleep(3);
@@ -165,6 +167,7 @@ BEGIN
 		reaise notice 'НЕЛЬЗЯ НАПАДАТЬ НА ИМПЕРАТОРА';
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -1;
+	end if;
 	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
 
 	
@@ -173,7 +176,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -2;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
 	pg_sleep(3);
@@ -189,16 +192,13 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -3;
-	endif;
-	if 
-	
-
-	(select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет')*min_count then
+	end if;
+	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет')*min_count then
 		raise notice 'Не достаточно денег';
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -4;
-	endif;
+	end if;
 
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
@@ -245,7 +245,7 @@ BEGIN
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return 1;
-	endif;
+	end if;
 	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
 	pg_sleep(3);
@@ -254,6 +254,7 @@ BEGIN
 		reaise notice 'НЕЛЬЗЯ НАПАДАТЬ НА ИМПЕРАТОРА';
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		return -1;
+	end if;
 	ask := INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА=’Найти человека’), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ=’ОБРАБАТЫВАЕТСЯ’), ИДЧ_Ц) returning ИД;
 
 	
@@ -262,7 +263,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -2;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
 	pg_sleep(3);
@@ -278,16 +279,13 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -3;
-	endif;
-	if 
-	
-
-	(select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет')*min_count then
+	end if;
+	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет')*min_count then
 		raise notice 'Не достаточно денег';
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -4;
-	endif;
+	end if;
 
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
 	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
@@ -331,7 +329,7 @@ BEGIN
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
 	pg_sleep(3);
@@ -344,7 +342,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
 	pg_sleep(3);
@@ -355,7 +353,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -2;
-	endif;
+	end if;
 
 
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Стать воином') where ИД=ИД_З;
@@ -368,7 +366,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'));
 	pg_sleep(3);
 
@@ -394,7 +392,7 @@ BEGIN
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
 	pg_sleep(3);
@@ -407,7 +405,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел'));
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
 	pg_sleep(3);
@@ -418,7 +416,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
 		return -2;
-	endif;
+	end if;
 
 
 	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Стать предводителем') where ИД=ИД_З;
@@ -431,7 +429,7 @@ BEGIN
 		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
-	endif;
+	end if;
 	second_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел'));
 	pg_sleep(3);
 
