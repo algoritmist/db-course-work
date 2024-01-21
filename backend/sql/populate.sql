@@ -15,3 +15,4 @@
 \copy КОНТРАКТ from 'data-generator/out/КОНТРАКТ.csv' with delimiter ',' csv header;
 \copy ВЕДОМОСТЬ from 'data-generator/out/ВЕДОМОСТЬ.csv' with delimiter ',' csv header;
 \copy СТОИМОСТЬ from 'data-generator/out/СТОИМОСТЬ.csv' with delimiter ',' csv header;
+\copy РАБОТНИК from 'data-generator/out/РАБОТНИК.csv' with delimiter ',' csv header;
