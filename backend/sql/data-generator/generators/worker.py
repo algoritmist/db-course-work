@@ -1,5 +1,4 @@
 import random
-from priveleges import Priveleges
 
 
 def headers():

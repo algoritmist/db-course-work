@@ -19,30 +19,16 @@ class Warrior:
 
 
 def generate(humans, warrior_types):
-    emperors = list(filter(lambda h: h.status_id == Status.ИМПЕРАТОР.value, humans))
     generals = list(filter(lambda h: h.status_id == Status.ПОЛКОВОДЕЦ.value, humans))
     soldiers = list(filter(lambda h: h.status_id == Status.СОЛДАТ.value, humans))
 
-    emperor_warriors = \
-        [
-            Warrior
-                (
-                human.id,
-                random.choice(warrior_types).name,
-                None,
-                random.randint(1, 100),
-                random.randint(1, 100),
-                random.randint(1, 100)
-            )
-            for human in emperors
-        ]
     general_warriors = \
         [
             Warrior
                 (
                 human.id,
                 random.choice(warrior_types).name,
-                random.choice(emperors).id,
+                None,
                 random.randint(1, 100),
                 random.randint(1, 100),
                 random.randint(1, 100)
@@ -63,4 +49,4 @@ def generate(humans, warrior_types):
             )
             for human in soldiers
         ]
-    return emperor_warriors + general_warriors + soldier_warriors
+    return general_warriors + soldier_warriors

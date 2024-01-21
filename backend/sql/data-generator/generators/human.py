@@ -52,7 +52,7 @@ def generate_one(id, locations):
     status = Status.СВОБОДНЫЙ if gender == 'F' else generate_random_status()
     money = random.randint(0, 10 ** 9)
     sold_soul = random.randint(0, 1) == 0
-    location = random.choice(locations)
+    location = random.choice(locations).id
     return Human(id, gender, first_name, last_name, date, status.value, money, sold_soul, location)
 
 
