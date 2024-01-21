@@ -15,7 +15,7 @@ create table ЧЕЛОВЕК
     СТАТУС_ИД     int references СТАТУС (ИД) on delete cascade,
     БАЛАНС        int     not null,
     ПРОДАЖА_ДУШИ  int,
-    МЕСТОПОЛОЖЕНИЕ int references МЕСТОПОЛОЖЕНИЕ (ИД) pn delete cascade
+    МЕСТОПОЛОЖЕНИЕ int references МЕСТОПОЛОЖЕНИЕ (ИД) on delete cascade
 );
 
 create table МЕСТОПОЛОЖЕНИЕ
