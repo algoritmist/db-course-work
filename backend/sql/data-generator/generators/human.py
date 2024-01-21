@@ -22,7 +22,7 @@ class Human:
         self.location = location
 
     def __repr__(self):
-        return f"{self.id},{self.first_name},{self.last_name},{self.gender},{self.date_of_birth},{self.status_id},{self.money},{self.sold_soul}, {self.location}"
+        return f"{self.id},{self.first_name},{self.last_name},{self.gender},{self.date_of_birth},{self.status_id},{self.money},{self.sold_soul},{self.location}"
 
 
 def generate_name_and_gender():
