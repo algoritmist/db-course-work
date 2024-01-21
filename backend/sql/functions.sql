@@ -13,7 +13,7 @@ BEGIN
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	main_worker := any(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента'));
+	main_worker := select ЧЛВК_ИД from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
 	pg_sleep(3);
 
