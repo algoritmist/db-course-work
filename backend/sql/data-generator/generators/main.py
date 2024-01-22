@@ -79,7 +79,7 @@ with open("../out/ТИП_ЗАПРОСА.csv", "w") as f:
     [f.write(request.__repr__() + "\n") for request in request_types]
     f.close()
 
-applications = application.generate(humans, request_types, subjects)
+applications = application.generate(humans, request_types, subjects, warrior_types)
 with open("../out/ЗАЯВКА.csv", "w") as f:
     f.write(application.headers() + "\n")
     [f.write(application.__repr__() + "\n") for application in applications]
