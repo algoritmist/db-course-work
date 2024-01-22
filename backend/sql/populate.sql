@@ -1,13 +1,12 @@
 \copy СТАТУС from 'data-generator/out/СТАТУС.csv' with delimiter ',' csv header;
-\copy ЧЕЛОВЕК from 'data-generator/out/ЧЕЛОВЕК.csv' with delimiter ',' csv header;
 \copy МЕСТОПОЛОЖЕНИЕ from 'data-generator/out/МЕСТОПОЛОЖЕНИЕ.csv' with delimiter ',' csv header;
+\copy ЧЕЛОВЕК from 'data-generator/out/ЧЕЛОВЕК.csv' with delimiter ',' csv header;
 \copy ТИП_ВОИНА from 'data-generator/out/ТИП_ВОИНА.csv' with delimiter ',' csv header;
 \copy ВОИН from 'data-generator/out/ВОИН.csv' with delimiter ',' NULL AS 'None' csv header;
 \copy ПРЕДМЕТ from 'data-generator/out/ПРЕДМЕТ.csv' with delimiter ',' csv header;
 \copy ЗАКЛИНАНИЕ from 'data-generator/out/ЗАКЛИНАНИЕ.csv' with delimiter ',' csv header;
 \copy ЗАКЛИНАНИЯ_ВОИНА from 'data-generator/out/ЗАКЛИНАНИЯ_ВОИНА.csv' with delimiter ',' csv header;
 \copy ТИП_ЗАПРОСА from 'data-generator/out/ТИП_ЗАПРОСА.csv' with delimiter ',' csv header;
-\copy ПРИВИЛЕГИИ from 'data-generator/out/ПРИВИЛЕГИИ.csv' with delimiter ',' csv header;
 \copy ОТДЕЛ from 'data-generator/out/ОТДЕЛ.csv' with delimiter ';' csv header;
 \copy СТАТУС_ЗАЯВКИ from 'data-generator/out/СТАТУС_ЗАЯВКИ.csv' with delimiter ',' csv header;
 \copy СТАТУС_КОНТРАКТА from 'data-generator/out/СТАТУС_КОНТРАКТА.csv' with delimiter ',' csv header;

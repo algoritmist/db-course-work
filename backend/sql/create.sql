@@ -5,6 +5,15 @@ create table СТАТУС
     НАЗВАНИЕ varchar not null
 );
 
+create table МЕСТОПОЛОЖЕНИЕ
+(
+    ИД      serial primary key,
+    СТРАНА  varchar,
+    ГОРОД   varchar,
+    ШИРОТА  real,
+    ДОЛГОТА real
+);
+
 create table ЧЕЛОВЕК
 (
     ИД            serial primary key,
@@ -16,15 +25,6 @@ create table ЧЕЛОВЕК
     БАЛАНС        int     not null,
     ПРОДАЖА_ДУШИ  bool,
     МЕСТОПОЛОЖЕНИЕ int references МЕСТОПОЛОЖЕНИЕ (ИД) on delete cascade
-);
-
-create table МЕСТОПОЛОЖЕНИЕ
-(
-    ИД      serial primary key,
-    СТРАНА  varchar,
-    ГОРОД   varchar,
-    ШИРОТА  real,
-    ДОЛГОТА real
 );
 
 create table ТИП_ВОИНА
