@@ -312,7 +312,7 @@ BEGIN
 	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
 	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
-	return journal;
+	return result_id;
 End;
 $$ language plpgsql;
 
