@@ -299,7 +299,7 @@ BEGIN
 End;
 $$ language plpgsql;
 
-Create function be_warrior(ИД_З int)
+Create or replace function be_warrior(ИД_З int)
 Returns int AS $$
 DECLARE
 	main_worker int := 0;
@@ -341,7 +341,7 @@ BEGIN
 	end if;
 	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел');
 
-	insert into ВОИН(ЧЛВК_ИД,ЗДОРОВЬЕ, ОРУЖИЕ, БРОНЯ) values(ИД_З,floor(RAND()*100),floor(RAND()*100),floor(RAND()*100));
+	insert into ВОИН(ЧЛВК_ИД,ЗДОРОВЬЕ, ОРУЖИЕ, БРОНЯ) values(ИД_З,100,100,100);
 	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ВЫПОЛНЕНИЯ=current_date where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
@@ -350,7 +350,7 @@ BEGIN
 End;
 $$ language plpgsql;
 
-Create function be_leader(ИД_З int)
+Create or replace function be_leader(ИД_З int)
 Returns int AS $$
 DECLARE
 	main_worker int := 0;
@@ -367,7 +367,7 @@ BEGIN
 	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=true where ЧЛВК_ИД = main_worker;
 
-	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_З, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Стать предводителем'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ) values(ИД_З, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Стать предводителем'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ')) returning ИД into ask;
 
 	
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
@@ -392,7 +392,7 @@ BEGIN
 	end if;
 	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Военный отдел');
 
-	insert into ВОИН(ЧЛВК_ИД,ЗДОРОВЬЕ, ОРУЖИЕ, БРОНЯ) values(ИД_З,floor(RAND()*100),floor(RAND()*100),floor(RAND()*100));
+	insert into ВОИН(ЧЛВК_ИД,ЗДОРОВЬЕ, ОРУЖИЕ, БРОНЯ) values(ИД_З,100,100,100);
 	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
 	update ВЕДОМОСТЬ set ДАТА_ВЫПОЛНЕНИЯ=current_date where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
