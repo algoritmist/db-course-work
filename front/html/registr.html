@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Курсовая работа</title>
+</head>
+<body onload="loadReg()">
+  <div class="container" style=" background-color: #2a2a39; overflow:hidden;">
+
+  <h1 style="height:40px;padding-top:1px;color: #e5d5e4">
+    Курсовая работа
+  </h1>
+  </div>
+  <button onclick="window.location.replace('index.html');" class="cbutton" name="auth" style="margin-bottom: 400px; margin-left: 100px">
+    назад
+  </button>
+  <div align="center" style="scale: 1.4">
+      <span class="authorize">
+        <label for="name">
+          Имя
+        </label>
+        <input type="text" id="name" name="name" size="10" />
+      </span>
+      <span class="authorize">
+
+          <label>Выберите пол</label>
+          <span>
+          <input type="radio" id="Man" name="gend" value="Man" checked />
+          <label for="Man">М</label>
+        </span>
+        <span>
+        <input type="radio" id="Wom" name="gend" value="Wom" />
+        <label for="Wom">Ж</label>
+        </span>
+      </span>
+      <br/>
+      <span class="authorize">
+        <label for="surname">
+          Фамилия
+        </label>
+        <input type="text" id="surname" name="surname" size="10" />
+      </span>
+      <span class="authorize">
+        <label for="birthday">
+          День рожденья
+        </label>
+        <input type="date" id="birthday" name="birthday" size="10" />
+      </span>
+      <br/>
+      <span class="authorize">
+        <label for="sale">
+          Продаете ли вы душу
+          <input type="checkbox" id="sale" name="sale" size="10" />
+        </label>
+      </span>
+      <br/>
+    <button class="cbutton" id="submButton" value="Зарегистрироваься" onclick="registration();">Зарегистрироваться</button>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>
