@@ -1,103 +1,220 @@
+<<<<<<< HEAD
+create or replace function non_number()
+returns trigger as $$
+  begin
+    if NEW.ИМЯ similar to '%[0-9]+%' THEN
+      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ИМЕНИ';
+      DELETE FROM ЧЕЛОВЕК where ИМЯ=new.ИМЯ;
+    elseif NEW.ФАМИЛИЯ similar to '%[0-9]+%' THEN
+      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ФАМИЛИИ';
+      DELETE FROM ЧЕЛОВЕК where ФАМИЛИЯ=NEW.ФАМИЛИЯ;
+    end if;
+    return NEW;
+  end;
+$$ language plpgsql;
+
+create trigger nameCheck after insert on ЧЕЛОВЕК for each row execute procedure non_number();
+
+
+create or replace function non_girl()
+returns trigger as $$
+        begin
+                if exists(select * from ЧЕЛОВЕК where ИД=new.ЧЛВК_ИД and ПОЛ='Ж') then
+                        raise notice 'Женщина не может стать воином';
+                        delete from ВОИН where ИД=new.ИД;
+                end if;
+                return new;
+        end;
+$$ language plpgsql;
+
+create trigger woman_fighter after insert on ВОИН for each row execute procedure non_girl();
+
+
+create or replace function predv_status()
+ returns trigger as $$
+        begin
+                if 3=any(select НОМЕР_СТАТУСА from ЧЕЛОВЕК
+                           join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД where ЧЕЛОВЕК.ИД=
+                           (select (ЧЛВК_ИД) from ВОИН where ИД=new.ПРЕДВОДИТЕЛЬ_ИД)) or 2=any(select НОМЕР_СТАТУСА from ЧЕЛОВЕК
+                           join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД where ЧЕЛОВЕК.ИД=
+                           (select (ЧЛВК_ИД) from ВОИН where ИД=new.ПРЕДВОДИТЕЛЬ_ИД)) then
+                        raise notice 'этот воин не может стать предводителем из-за маленького ранга';
+                        delete from ВОИН where ИД=new.ИД;
+                end if;
+                return new;
+        end;
+$$ language plpgsql;
+
+create or replace trigger warrior_com after insert on ВОИН for each row execute procedure predv_status();
+
+
+create or replace function time_checker()
+returns trigger as $$
+begin
+        if new.ДАТА_ЗАПРОСА>new.ДАТА_ИСПОЛНЕНИЯ then
+                raise notice 'ошибка дат';
+                delete from ВЕДОМОСТЬ where ИД=new.ИД;
+        end if;
+        return new;
+end;
+$$ language plpgsql;
+
+create or replace trigger time_check after insert on ВЕДОМОСТЬ for each row execute procedure time_checker();
+
+
 create or replace function non_upd_number()
 returns trigger as $$
   begin
     if NEW.ИМЯ similar to '%[0-9]+%' THEN
-      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ИМЕНИ %', new.ИД;
+      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ИМЕНИ';
       update ЧЕЛОВЕК set ИМЯ=old.ИМЯ where ИД=new.ИД;
     end if;
-	if NEW.ФАМИЛИЯ similar to '%[0-9]+%' THEN
+        if NEW.ФАМИЛИЯ similar to '%[0-9]+%' THEN
       RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ФАМИЛИИ';
       update ЧЕЛОВЕК set ФАМИЛИЯ=old.ФАМИЛИЯ where ИД=new.ИД;
-    end if;  
+    end if;
     return NEW;
   end;
 $$ language plpgsql;
 
 create or replace trigger nameUpdCheck after update on ЧЕЛОВЕК for each row execute procedure non_upd_number();
 
+
 create or replace function non_upd_girl()
 returns trigger as $$
-	begin
-		if not new.ПОЛ=old.ПОЛ then
-			raise notice 'Нельзя менять пол';
-			update ЧЕЛОВЕК set ПОЛ=old.ПОЛ where ИД=new.ИД;
-		end if;
-		return new;
-	end;
+        begin
+                if not new.ПОЛ=old.ПОЛ then
+                        raise notice 'Нельзя менять пол';
+                        update ЧЕЛОВЕК set ПОЛ=old.ПОЛ where ИД=new.ИД;
+                end if;
+                return new;
+        end;
 $$ language plpgsql;
 
 create trigger woman_upd_fighter after update on ЧЕЛОВЕК for each row execute procedure non_upd_girl();
 
+
 create or replace function predv_upd_status()
  returns trigger as $$
-	begin
-		if exists(select * from ВОИН where ИД_ПРЕДВОДИТЕЛЯ=
-				 (select ИД from ВОИН where ЧЛВК_ИД=new.ИД)) and new.СТАТУС_ИД<5 then
-			raise notice 'нельзя менять статус этого человека, пока он является предводителем';
- 			delete from ВОИН where ИД=new.ИД;
-		end if;
-		return new;
-	end;
+        begin
+                if exists(select * from ВОИН where ПРЕДВОДИТЕЛЬ_ИД=
+                                 (select ИД from ВОИН where ЧЛВК_ИД=new.ИД)) and new.СТАТУС_ИД<>2 and new.СТАТУС_ИД<>3 then
+                        raise notice 'нельзя менять статус этого человека, пока он является предводителем';
+                        delete from ВОИН where ИД=new.ИД;
+                end if;
+                return new;
+        end;
 $$ language plpgsql;
 
  create or replace trigger warrior_upd_com after update on ЧЕЛОВЕК for each row execute procedure predv_upd_status();
+=======
 
-create or replace function magic_upd_ability()
+create or replace function non_number()
 returns trigger as $$
-	begin
-		if (select ТИП_ОРУЖИЯ from ХАРАКТЕРИСТИКИ_ОРУЖИЯ where ИД=(select ОРУЖИЕ from ВОИН where ИД=new.ИД_ВОИНА))
-			not similar to 'Посох %' then
-			raise notice 'Этот воин не умеет использовать магию';
-			update ВОИН_ЗАКЛИНАНИЕ set ИД_ВОИНА=old.ИД_ВОИНА|ИД_ЗАКЛИНАНИЯ=old.ИД_ЗАКЛИНАНИЯ where ИД=new.ИД;
-		end if;
-		return new;
-	end;
+  begin
+    if NEW.ИМЯ similar to '%[0-9]+%' THEN
+      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ИМЕНИ';
+      DELETE FROM ЧЕЛОВЕК where ИМЯ=new.ИМЯ;
+    elseif NEW.ФАМИЛИЯ similar to '%[0-9]+%' THEN
+      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ФАМИЛИИ';
+      DELETE FROM ЧЕЛОВЕК where ФАМИЛИЯ=NEW.ФАМИЛИЯ;
+    end if;
+    return NEW;
+  end;
 $$ language plpgsql;
 
-create trigger magic_upd_useful after update on ВОИН_ЗАКЛИНАНИЕ for each row execute procedure magic_upd_ability();
+create trigger nameCheck after insert on ЧЕЛОВЕК for each row execute procedure non_number();
 
-create or replace function normal_upd_level()
+
+create or replace function non_girl()
+returns trigger as $$
+        begin
+                if exists(select * from ЧЕЛОВЕК where ИД=new.ЧЛВК_ИД and ПОЛ='ж') then
+                        raise notice 'Женщина не может стать воином';
+                        delete from ВОИН where ИД=new.ИД;
+                end if;
+                return new;
+        end;
+$$ language plpgsql;
+
+create trigger woman_fighter after insert on ВОИН for each row execute procedure non_girl();
+
+
+create or replace function predv_status()
+ returns trigger as $$
+        begin
+                if 3=any(select НОМЕР_СТАТУСА from ЧЕЛОВЕК
+                           join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД where ЧЕЛОВЕК.ИД=
+                           (select (ЧЛВК_ИД) from ВОИН where ИД=new.ИД_ПРЕДВОДИТЕЛЯ)) or 2=any(select НОМЕР_СТАТУСА from ЧЕЛОВЕК
+                           join СТАТУС on ЧЕЛОВЕК.СТАТУС_ИД=СТАТУС.ИД where ЧЕЛОВЕК.ИД=
+                           (select (ЧЛВК_ИД) from ВОИН where ИД=new.ИД_ПРЕДВОДИТЕЛЯ)) then
+                        raise notice 'этот воин не может стать предводителем из-за маленького ранга';
+                        delete from ВОИН where ИД=new.ИД;
+                end if;
+                return new;
+        end;
+$$ language plpgsql;
+
+create or replace trigger warrior_com after insert on ВОИН for each row execute procedure predv_status();
+
+
+create or replace function time_checker()
 returns trigger as $$
 begin
-	if new.УРОВЕНЬ_ДОСТУПА>5 then
-		raise notice 'Превышен максимальный уровень доступа';
-		update ТИП_ЗАПРОСА set УРОВЕНЬ_ДОСТУПА=old.УРОВЕНЬ_ДОСТУПА where ИД=new.ИД;
-	elseif new.УРОВЕНЬ_ДОСТУПА<1 then
-		raise notice 'Уровень доступа меньше минимального';
-		update ТИП_ЗАПРОСА set УРОВЕНЬ_ДОСТУПА=old.УРОВЕНЬ_ДОСТУПА where ИД=new.ИД;
-	end if;
-	return new;
+        if new.ДАТА_ЗАПРОСА>new.ДАТА_ИСПОЛНЕНИЯ then
+                raise notice 'ошибка дат';
+                delete from ВЕДОМОСТЬ where ИД=new.ИД;
+        end if;
+        return new;
 end;
 $$ language plpgsql;
 
-create or replace trigger level_upd_check after update on ТИП_ЗАПРОСА for each row execute procedure normal_upd_level();
+create or replace trigger time_check after insert on ВЕДОМОСТЬ for each row execute procedure time_checker();
 
-create or replace function normal_upd_group_level()
+
+create or replace function non_upd_number()
 returns trigger as $$
-begin
-	if new.УРОВЕНЬ_ПРИВЕЛЕГИЙ>5 then
-		raise notice 'Превышен максимальный уровень доступа';
-		update ГРУППА set УРОВЕНЬ_ПРИВЕЛЕГИЙ=old.УРОВЕНЬ_ПРИВЕЛЕГИЙ where ИД=new.ИД;
-	elseif new.УРОВЕНЬ_ПРИВЕЛЕГИЙ<1 then
-		raise notice 'Уровень доступа меньше минимального';
-		update ГРУППА set УРОВЕНЬ_ПРИВЕЛЕГИЙ=old.УРОВЕНЬ_ПРИВЕЛЕГИЙ where ИД=new.ИД;
-	end if;
-	return new;
-end;
+  begin
+    if NEW.ИМЯ similar to '%[0-9]+%' THEN
+      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ИМЕНИ';
+      update ЧЕЛОВЕК set ИМЯ=old.ИМЯ where ИД=new.ИД;
+    end if;
+        if NEW.ФАМИЛИЯ similar to '%[0-9]+%' THEN
+      RAISE NOTICE 'НЕПРАВИЛЬНЫЙ ВВОД ФАМИЛИИ';
+      update ЧЕЛОВЕК set ФАМИЛИЯ=old.ФАМИЛИЯ where ИД=new.ИД;
+    end if;
+    return NEW;
+  end;
 $$ language plpgsql;
 
-create or replace trigger level_upd_group_check after update on ГРУППА for each row execute procedure normal_upd_group_level();
+create or replace trigger nameUpdCheck after update on ЧЕЛОВЕК for each row execute procedure non_upd_number();
 
-create or replace function time_upd_checker()
+
+create or replace function non_upd_girl()
 returns trigger as $$
-begin
-	if new.ДАТА_ЗАПРОСА>new.ДАТА_ИСПОЛНЕНИЯ then
-		raise notice 'ошибка дат';
-		update ВЕДОМОСТИ set ДАТА_ИСПОЛНЕНИЯ=null where ИД=new.ИД;
-	end if;
-	return new;
-end;
+        begin
+                if not new.ПОЛ=old.ПОЛ then
+                        raise notice 'Нельзя менять пол';
+                        update ЧЕЛОВЕК set ПОЛ=old.ПОЛ where ИД=new.ИД;
+                end if;
+                return new;
+        end;
 $$ language plpgsql;
 
-create or replace trigger time_upd_check after update on ВЕДОМОСТЬ for each row execute procedure time_upd_checker();
+create trigger woman_upd_fighter after update on ЧЕЛОВЕК for each row execute procedure non_upd_girl();
 
+
+create or replace function predv_upd_status()
+ returns trigger as $$
+        begin
+                if exists(select * from ВОИН where ИД_ПРЕДВОДИТЕЛЯ=
+                                 (select ИД from ВОИН where ЧЛВК_ИД=new.ИД)) and new.СТАТУС_ИД<>2 and new.СТАТУС_ИД<>3 then
+                        raise notice 'нельзя менять статус этого человека, пока он является предводителем';
+                        delete from ВОИН where ИД=new.ИД;
+                end if;
+                return new;
+        end;
+$$ language plpgsql;
+
+ create or replace trigger warrior_upd_com after update on ЧЕЛОВЕК for each row execute procedure predv_upd_status();
+>>>>>>> origin/pupyr/dev/create
