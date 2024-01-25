@@ -1,5 +1,8 @@
 let myId = 0;
 let locate;
+let lastX=0;
+let lastY=0;
+let persOrObj = 0;
 function loadReg() {
   const submButton = document.getElementById("submButton");
   submButton.disabled = true;
@@ -55,16 +58,18 @@ function loadMap(){
   img.src="img/map.jpeg";
   img.onload = () => {
     context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    context.closePath()
   }
 
   const success =  (success) => {
     context.beginPath();
-    lat = success.coords.latitude
-    lon = success.coords.longitude
+    const lat = success.coords.latitude
+    const lon = success.coords.longitude
     const x = (lon+180)/360-0.03;
     const y = (1-Math.log2(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.log2(Math.E)/Math.PI)/2;
     context.arc(x*2800, y*1500, 15, 0, 2 * Math.PI, false);
     context.fill();
+    context.closePath();
   }
   const err = ()=>{}
 
@@ -72,6 +77,7 @@ function loadMap(){
 }
 
 function changeInput(){
+  persOrObj=1;
   const person = document.getElementById("findPerson");
   const obj = document.getElementById("findObj");
   obj.disabled=true;
@@ -85,6 +91,7 @@ function changeInput(){
 }
 
 function changeInput2(){
+  persOrObj=0;
   const person = document.getElementById("findPerson");
   const obj = document.getElementById("findObj");
   obj.disabled=false;
@@ -107,10 +114,46 @@ function findPerson() {
       "first_name": name,
       "last_name": surname
     });
+  if(persOrObj===0)drowPoint(Math.random(), Math.random())
+  if(persOrObj===1)drowPointObj(Math.random(), Math.random())
+  const war = document.getElementById("war");
+  war.style.display="block";
   xhr.open('POST', 'http://localhost:5050//find_person.php');
   xhr.setRequestHeader("Content-Type", "application/json")
   xhr.send(data)
   xhr.onload = () =>{
-      console.log(xhr.response)
+    console.log(xhr.response)
   }
+}
+function drowPoint(x, y){
+  const canvas = document.querySelector("canvas");
+  const context = canvas.getContext("2d");
+  context.beginPath();
+  context.arc(x*2800, y*1500, 15, 0, 2 * Math.PI, false);
+  context.fillStyle="black";
+  lastX=x;
+  lastY=y;
+  context.fill();
+  context.closePath()
+}
+
+function drowPointObj(x, y){
+  const canvas = document.querySelector("canvas");
+  const context = canvas.getContext("2d");
+  context.beginPath();
+  context.arc(x*2800, y*1500, 15, 0, 2 * Math.PI, false);
+  context.fillStyle="blue";
+  lastX=x;
+  lastY=y;
+  context.fill();
+  context.closePath()
+}
+function drowWar(){
+  const canvas = document.querySelector("canvas");
+  const context = canvas.getContext("2d");
+  context.beginPath();
+  context.arc(lastX*2800, lastY*1500, 15, 0, 2 * Math.PI, false);
+  context.fillStyle="red";
+  context.fill();
+  context.closePath()
 }
