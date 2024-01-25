@@ -3,7 +3,9 @@
 
 # Fill data
 chmod +x backend/sql/quick-populate.sh
-sh backend/sql/quick-populate.sh
+cd backend/sql && sh quick-populate.sh
+
+cd ../..
 
 # set new public html
 rm -rf ~/public_html
