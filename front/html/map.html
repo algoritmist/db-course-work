@@ -18,8 +18,8 @@
   баланс
 </button>
 <div>
-      <canvas style="margin-top: 50px;margin-left: 60px; filter: drop-shadow(0px 0px 10px #38384e)"></canvas>
-      <span  class="authorize" style="width: 400px; height: 400px; position: absolute; transform: translate(5%,30%);">
+  <canvas style="margin-top: 50px;margin-left: 60px; filter: drop-shadow(0px 0px 10px #38384e)"></canvas>
+  <span  class="authorize" style="width: 400px; height: 400px; position: absolute; transform: translate(5%,30%);">
 
         <button onclick="changeInput2()" id="findPerson" class="cbutton" name="auth" style="scale: none; position: absolute;transform: translate(100%,15%);">
           человек
@@ -41,7 +41,9 @@
           <button onclick="findPerson()" class="cbutton" style="font-family: Arial,serif;display: flex; scale: none; margin-top: 50px">Отправить</button>
         </span>
       </span>
-      <span  class="authorize" style="width: 400px; height: 400px; position: absolute; transform: translate(5%,140%);"></span>
+  <span class="authorize" style="width: 400px; height: 400px; position: absolute; transform: translate(5%,140%);">
+        <button id="war" class="cbutton" onclick="drowWar()" style="font-family: Arial,serif;display: none; scale: none; margin-top: 50px; height: 100px">Устроить войну</button>
+      </span>
 </div>
 </body>
 <script src="js/app.js">
