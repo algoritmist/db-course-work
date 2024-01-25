@@ -15,21 +15,15 @@ BEGIN
 	end if;
 	select ЧЛВК_ИД into main_worker from РАБОТНИК  where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
 	update РАБОТНИК set ЗАНЯТОСТЬ=true where ЧЛВК_ИД = main_worker;
-	select pg_sleep(3);
-
-	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Найти человека'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
-
-	
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ) values(ИД_З, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Найти человека'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ')) returning ИД into ask;
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
 		update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОТКЛОНЕНО') where ИД = ask;
-		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
+		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
 	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
 	update РАБОТНИК set ЗАНЯТОСТЬ=true where ЧЛВК_ИД = second_worker;
-	select pg_sleep(3);
-	
 	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти человека') then
 		RAISE NOTICE 'Недостаточно средств, заявка отклонена';
 		update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОТКЛОНЕНО') where ИД = ask;
@@ -39,38 +33,37 @@ BEGIN
 	end if;
 
 
-	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти человека') where ИД=ИД_З;
-	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
+	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти человека') where ИД=ИД_З;
+	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ИД=ask;
 	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
-	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
-	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'),CURDATE) Returning ИД into journal;
+	insert into КОНТРАКТ(ЗАЯВКА_ИД, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ, ОТДЕЛ, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей'),current_date) Returning ИД into journal;
 
 	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Отдел поиска людей')) then
 		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
 	end if;
-	select * into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей');
-	select pg_sleep(3);
-
+	select * into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел поиска людей');
+	
 	if not exists(select * from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З) then
 		raise notice 'Запрашиваемый человек не найден';
 		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
-		update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE where ИД=journal;
+		update ВЕДОМОСТЬ set ДАТА_ВЫПОЛНЕНИЯ=current_date where ИД=journal;
 		update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
 		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
 		return -4;
 	end if;
 	select МЕСТОПОЛОЖЕНИЕ into result_id from ЧЕЛОВЕК where ИМЯ=ИМЯ_З and ФАМИЛИЯ=ФАМИЛИЯ_З;
 	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
-	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
+	update ВЕДОМОСТЬ set ДАТА_ВЫПОЛНЕНИЯ=current_date, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
 	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
-	return result_id;
+	return journal;
 End;
 $$ language plpgsql;
 
-Create function find_object(ИД_З int, ПРЕДМЕТ_З varchar)
+Create or replace function find_object(ИД_З int, ПРЕДМЕТ_З varchar)
 Returns int AS $$
 DECLARE
 	main_worker int := 0;
@@ -80,64 +73,61 @@ DECLARE
 	journal int := 0;
 	result_id int := 0;
 BEGIN
-	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
+	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента')) then
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
-	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = main_worker;
-	select pg_sleep(3);
+	select ЧЛВК_ИД into main_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Отдел менеджмента');
+	update РАБОТНИК set ЗАНЯТОСТЬ=true where ЧЛВК_ИД = main_worker;
 
-	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ,ЦЕЛЬ_ЧЛВК_ИД) values(ИД_А, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Найти предмет'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ'), ИДЧ_Ц) returning ИД into ask;
+	INSERT INTO ЗАЯВКА(ЧЛВК_ИД, ТИП_ЗАПРОСА, СТАТУС_ОДОБРЕНИЯ) values(ИД_З, (Select ИД from ТИП_ЗАПРОСА where РАСШИФРОВКА='Найти предмет'), (SELECT ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ='ОБРАБАТЫВАЕТСЯ')) returning ИД into ask;
 
 	
-	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
+	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Финансовый отдел')) then
 		update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОТКЛОНЕНО') where ИД = ask;
-		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
+		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, повторите попытку позже';
 		return -1;
 	end if;
-	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
-	update РАБОТНИК set ЗАНЯТОСТЬ=1 where ЧЛВК_ИД = second_worker;
-	select pg_sleep(3);
+	select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Финансовый отдел');
+	update РАБОТНИК set ЗАНЯТОСТЬ=true where ЧЛВК_ИД = second_worker;
 	
 	if (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)<(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') then
 		RAISE NOTICE 'Недостаточно средств, заявка отклонена';
 		update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОТКЛОНЕНО') where ИД = ask;
-		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
-		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
+		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
+		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
 		return -2;
 	end if;
 
 
-	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_А)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
-	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ask;
-	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	insert into КОНТРАКТ(НОМЕР_ЗАЯВКИ, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
-	Insert into ВЕДОМОСТЬ(КОНТРАКТ_ИД, ОТДЕЛ_ИД, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел'),CURDATE) Returning ИД into journal;
+	Update ЧЕЛОВЕК set БАЛАНС = (select БАЛАНС from ЧЕЛОВЕК where ИД=ИД_З)-(select СТОИМОСТЬ from СТОИМОСТЬ where НАЗВАНИЕ = 'Найти предмет') where ИД=ИД_З;
+	update ЗАЯВКА set СТАТУС_ОДОБРЕНИЯ=(select ИД from СТАТУС_ЗАЯВКИ where ОПИСАНИЕ = 'ОДОБРЕНО') where ИД=ask;
+	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
+	insert into КОНТРАКТ(ЗАЯВКА_ИД, СТАТУС_ВЫПОЛНЕНИЯ) values (ask, (select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЯЕТСЯ')) returning ИД into contract;
+	Insert into ВЕДОМОСТЬ(КОНТРАКТ, ОТДЕЛ, ДАТА_ЗАПРОСА) values(contract, (SELECT ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел'),current_date) Returning ИД into journal;
 
-	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Торговый отдел')) then
-		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
+	if not exists(select * from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ = 'Торговый отдел')) then
+		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
 		raise notice 'Нет свободных сотрудников, операция скоро будет произведена';
 		return -3;
 	end if;
-	 select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=0 and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел');
-	select pg_sleep(3);
+	 select ЧЛВК_ИД into second_worker from РАБОТНИК where ЗАНЯТОСТЬ=false and ОТДЕЛ_ИД=(select ИД from ОТДЕЛ where НАЗВАНИЕ='Торговый отдел');
 
 	if not exists(select * from ПРЕДМЕТ where НАЗВАНИЕ=ПРЕДМЕТ_З) then
 		raise notice 'Предмет не найден';
-		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-		update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE where ИД=journal;
+		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
+		update ВЕДОМОСТЬ set ДАТА_ВЫПОЛНЕНИЯ=current_date where ИД=journal;
 		update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
-		update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
+		update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
 		return -4;
 	end if;
 	select ИД into result_id from ЧЕЛОВЕК inner join ПРЕДМЕТ on ЧЕЛОВЕК.ИД=ПРЕДМЕТ.ЧЛВК_ИД where ПРЕДМЕТ.НАЗВАНИЕ=ПРЕДМЕТ_З;
-	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = second_worker;
-	update ВЕДОМОСТЬ set ДАТА_ИСПОЛНЕНИЯ=CURDATE, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
+	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = second_worker;
+	update ВЕДОМОСТЬ set ДАТА_ВЫПОЛНЕНИЯ=current_date, МЕСТО_ПРОВЕДЕНИЯ=result_id where ИД=journal;
 	update КОНТРАКТ set СТАТУС_ВЫПОЛНЕНИЯ=(select ИД from СТАТУС_КОНТРАКТА where ОПИСАНИЕ = 'ВЫПОЛНЕН') where ИД=contract;
-	update РАБОТНИК set ЗАНЯТОСТЬ=0 where ЧЛВК_ИД = main_worker;
-	return result_id;
+	update РАБОТНИК set ЗАНЯТОСТЬ=false where ЧЛВК_ИД = main_worker;
+	return journal;
 End;
 $$ language plpgsql;
 
