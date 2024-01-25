@@ -1,3 +1,3 @@
 [submodule "site/php"]
 	path = site/php
-	url = https://github.com/algoritmist/db-course-work.git
+	url = https://github.com/algoritmist/db-course-backend.git
